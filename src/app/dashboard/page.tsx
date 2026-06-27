@@ -105,6 +105,10 @@ export default function JarvisDashboard() {
           </span>
         </div>
         <div className="flex items-center gap-3">
+          <button onClick={() => router.push('/dashboard/clients')}
+            style={{ color:'#555', background:'none', border:'none', cursor:'pointer', fontSize:'12px', fontFamily:'Space Grotesk' }}>Clientes</button>
+          <button onClick={() => router.push('/dashboard/settings')}
+            style={{ color:'#555', background:'none', border:'none', cursor:'pointer', fontSize:'12px', fontFamily:'Space Grotesk' }}>Config</button>
           <button
             onClick={() => router.push('/admin')}
             style={{ color:'#555', background:'none', border:'none', cursor:'pointer', fontSize:'12px', fontFamily:'Space Grotesk' }}
