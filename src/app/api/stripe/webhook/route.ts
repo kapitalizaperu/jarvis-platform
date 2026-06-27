@@ -2,11 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { getServerSupabase } from '@/lib/auth/supabase-client'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-02-24.acacia'
-})
+export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return NextResponse.json({ error: 'Stripe no configurado' }, { status: 503 })
+  }
+
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: '2025-02-24.acacia'
+  })
+
   const body = await req.text()
   const sig = req.headers.get('stripe-signature')!
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
@@ -26,7 +32,6 @@ export async function POST(req: NextRequest) {
       const { userId, planId } = session.metadata || {}
 
       if (userId) {
-        // Update user subscription in Supabase
         await supabase.auth.admin.updateUserById(userId, {
           user_metadata: {
             plan: planId,
@@ -41,7 +46,6 @@ export async function POST(req: NextRequest) {
 
     case 'customer.subscription.deleted': {
       const subscription = event.data.object as Stripe.Subscription
-      // Find user by stripe customer ID and downgrade
       const customerId = subscription.customer as string
       console.log('Subscription cancelled for customer:', customerId)
       break
