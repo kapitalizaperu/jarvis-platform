@@ -5,8 +5,6 @@
 
 import Anthropic from '@anthropic-ai/sdk'
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
 export interface JarvisContext {
@@ -137,10 +135,10 @@ Adapta tu comportamiento según las instrucciones de configuración del sistema.
 
 function selectModel(agentType: AgentType, taskComplexity: 'low' | 'medium' | 'high'): string {
   if (taskComplexity === 'high' || agentType === 'orchestrator' || agentType === 'dev') {
-    return 'claude-opus-4-8-20251101'
+    return 'claude-sonnet-4-6'
   }
   if (agentType === 'marketing' || agentType === 'sales' || agentType === 'video') {
-    return 'claude-sonnet-4-6-20251001'
+    return 'claude-sonnet-4-6'
   }
   return 'claude-haiku-4-5-20251001'
 }
@@ -186,6 +184,7 @@ export async function orchestrate(
   const model = selectModel(detectedAgent, complexity)
 
   // Llamar a Claude
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   const response = await anthropic.messages.create({
     model,
     max_tokens: 2048,
