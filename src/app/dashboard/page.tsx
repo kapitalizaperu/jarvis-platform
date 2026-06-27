@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { signOut } from '@/lib/auth/auth-helpers'
+import { useRouter } from 'next/navigation'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -42,6 +44,7 @@ const LIVE_TASKS: Task[] = [
 ]
 
 export default function JarvisDashboard() {
+  const router = useRouter()
   const [now, setNow] = useState(new Date())
   const [chat, setChat] = useState<{role:string;content:string}[]>([
     { role:'assistant', content:'Buenos días. Hoy tienes 38 clientes activos, 342 tareas completadas y $48,200 en revenue gestionado. ¿En qué quieres que me enfoque primero?' }
@@ -101,7 +104,15 @@ export default function JarvisDashboard() {
             {now.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push('/admin')}
+            style={{ color:'#555', background:'none', border:'none', cursor:'pointer', fontSize:'12px', fontFamily:'Space Grotesk' }}
+          >Admin</button>
+          <button
+            onClick={async () => { await signOut(); document.cookie='sb-access-token=; path=/; max-age=0'; router.push('/auth/login') }}
+            style={{ color:'#555', background:'none', border:'1px solid rgba(255,255,255,0.08)', borderRadius:'6px', cursor:'pointer', fontSize:'12px', padding:'6px 12px', fontFamily:'Space Grotesk' }}
+          >Salir</button>
           <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm" style={{ background:'linear-gradient(135deg,#00F5FF20,#9B59B620)', border:'1px solid rgba(0,245,255,0.2)' }}>A</div>
         </div>
       </div>
