@@ -297,8 +297,9 @@ Genera un briefing ejecutivo en máximo 150 palabras:
 
 Tono: directo, inteligente, como un socio estratégico de alto nivel.`
 
-  const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6-20251001',
+  const anthropic2 = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  const response = await anthropic2.messages.create({
+    model: 'claude-sonnet-4-6',
     max_tokens: 512,
     system: buildSystemPrompt('orchestrator', context),
     messages: [{ role: 'user', content: prompt }],
@@ -324,8 +325,9 @@ Genera la configuración completa para este agente:
 
 Responde en JSON con formato: { "name": "", "systemPrompt": "", "tools": [] }`
 
-  const response = await anthropic.messages.create({
-    model: 'claude-opus-4-8-20251101',
+  const anthropic3 = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  const response = await anthropic3.messages.create({
+    model: 'claude-sonnet-4-6',
     max_tokens: 1024,
     system: AGENT_PROMPTS.orchestrator,
     messages: [{ role: 'user', content: prompt }],
