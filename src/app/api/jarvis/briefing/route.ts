@@ -1,5 +1,7 @@
 // POST /api/jarvis/briefing — Briefing matutino automático
 import { NextRequest, NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 import { generateDailyBriefing } from '@/lib/jarvis/orchestrator'
 
 export async function POST(req: NextRequest) {

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { superpowersRouter, brainstorm, debugSystematically, writePlan, generateTests, verifyBeforeComplete } from '@/lib/jarvis/agents/superpowers'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   try {
     const { message, skill, context, tenantId } = await req.json()

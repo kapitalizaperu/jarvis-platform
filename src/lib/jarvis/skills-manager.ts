@@ -83,7 +83,7 @@ export async function searchSkillsForNeed(params: {
 // Extraer keywords de búsqueda con IA
 async function extractSearchKeywords(need: string): Promise<string[]> {
   const response = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: 'claude-haiku-4-5',
     max_tokens: 128,
     messages: [{
       role: 'user',
@@ -128,7 +128,7 @@ function calculateQualityScore(repo: any): number {
 // Evaluar seguridad y usabilidad de un skill con IA
 export async function evaluateSkill(skill: GitHubSkill): Promise<SkillEvaluation> {
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6-20251001',
+    model: 'claude-sonnet-4-6',
     max_tokens: 512,
     messages: [{
       role: 'user',
@@ -221,7 +221,7 @@ export async function autoDiscoverSkills(params: {
 }): Promise<GitHubSkill[]> {
 
   const response = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: 'claude-haiku-4-5',
     max_tokens: 256,
     messages: [{
       role: 'user',

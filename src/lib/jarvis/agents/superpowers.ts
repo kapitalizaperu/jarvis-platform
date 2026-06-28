@@ -40,7 +40,7 @@ export async function brainstorm(
   const skill = loadSkill('brainstorming')
 
   const response = await anthropic.messages.create({
-    model: 'claude-opus-4-8-20251101',
+    model: 'claude-opus-4-8',
     max_tokens: 2048,
     system: `Eres JARVIS usando la skill de Brainstorming de Superpowers.
 ${skill}
@@ -63,7 +63,7 @@ export async function debugSystematically(
   const skill = loadSkill('systematic-debugging')
 
   const response = await anthropic.messages.create({
-    model: 'claude-opus-4-8-20251101',
+    model: 'claude-opus-4-8',
     max_tokens: 2048,
     system: `Eres JARVIS usando la skill de Debugging Sistemático de Superpowers.
 ${skill}
@@ -86,7 +86,7 @@ export async function writePlan(
   const skill = loadSkill('writing-plans')
 
   const response = await anthropic.messages.create({
-    model: 'claude-opus-4-8-20251101',
+    model: 'claude-opus-4-8',
     max_tokens: 3000,
     system: `Eres JARVIS usando la skill de Writing Plans de Superpowers.
 ${skill}
@@ -109,7 +109,7 @@ export async function verifyBeforeComplete(
   const skill = loadSkill('verification-before-completion')
 
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6-20251001',
+    model: 'claude-sonnet-4-6',
     max_tokens: 1024,
     system: `Eres JARVIS verificando trabajo completado con la skill de Superpowers.
 ${skill}
@@ -139,7 +139,7 @@ export async function generateTests(
   const skill = loadSkill('test-driven-development')
 
   const response = await anthropic.messages.create({
-    model: 'claude-opus-4-8-20251101',
+    model: 'claude-opus-4-8',
     max_tokens: 2048,
     system: `Eres JARVIS usando TDD de Superpowers.
 ${skill}

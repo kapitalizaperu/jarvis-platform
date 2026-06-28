@@ -140,7 +140,7 @@ function selectModel(agentType: AgentType, taskComplexity: 'low' | 'medium' | 'h
   if (agentType === 'marketing' || agentType === 'sales' || agentType === 'video') {
     return 'claude-sonnet-4-6'
   }
-  return 'claude-haiku-4-5-20251001'
+  return 'claude-haiku-4-5'
 }
 
 // ── Detectar intención y agente apropiado ─────────────────────────────────────
@@ -167,6 +167,28 @@ function detectAgentFromMessage(message: string): AgentType {
 
 // ── Función principal del orquestador ────────────────────────────────────────
 
+async function fetchMemories(tenantId: string): Promise<string> {
+  try {
+    const { createClient } = await import('@supabase/supabase-js')
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { autoRefreshToken: false, persistSession: false } }
+    )
+    const { data } = await supabase
+      .from('jarvis_memories')
+      .select('type, content, importance')
+      .eq('tenant_id', tenantId)
+      .order('importance', { ascending: false })
+      .limit(10)
+
+    if (!data || data.length === 0) return ''
+    return '\n\n## Memorias de Jose Luis:\n' + data.map(m => `- [${m.type}] ${m.content}`).join('\n')
+  } catch {
+    return ''
+  }
+}
+
 export async function orchestrate(
   messages: JarvisMessage[],
   context: JarvisContext
@@ -176,8 +198,11 @@ export async function orchestrate(
   const lastMessage = messages[messages.length - 1]?.content ?? ''
   const detectedAgent = context.agentType ?? detectAgentFromMessage(lastMessage)
 
+  // Cargar memorias persistentes
+  const memoriesContext = await fetchMemories(context.tenantId)
+
   // Construir contexto del sistema
-  const systemPrompt = buildSystemPrompt(detectedAgent, context)
+  const systemPrompt = buildSystemPrompt(detectedAgent, context) + memoriesContext
 
   // Seleccionar modelo
   const complexity = lastMessage.length > 500 ? 'high' : lastMessage.length > 100 ? 'medium' : 'low'

@@ -1,5 +1,7 @@
 // POST /api/jarvis/agent/create — Crear agente nuevo on-demand por voz
 import { NextRequest, NextResponse } from 'next/server'
+
+export const dynamic = 'force-dynamic'
 import { createCustomAgent } from '@/lib/jarvis/orchestrator'
 
 export async function POST(req: NextRequest) {

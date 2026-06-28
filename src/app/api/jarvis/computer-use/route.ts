@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { executeComputerTask } from '@/lib/jarvis/agents/computer-use'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   try {
     const { task, tenantId, screenshotBase64 } = await req.json()

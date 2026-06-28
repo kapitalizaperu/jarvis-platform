@@ -32,7 +32,7 @@ export async function analyzeRequirement(params: {
 }): Promise<SystemSpec> {
 
   const response = await anthropic.messages.create({
-    model: 'claude-opus-4-8-20251101',
+    model: 'claude-opus-4-8',
     max_tokens: 2048,
     messages: [{
       role: 'user',
@@ -80,7 +80,7 @@ export async function generateCode(params: {
 }): Promise<{ filename: string; code: string; explanation: string }[]> {
 
   const response = await anthropic.messages.create({
-    model: 'claude-opus-4-8-20251101',
+    model: 'claude-opus-4-8',
     max_tokens: 4096,
     messages: [{
       role: 'user',
@@ -119,7 +119,7 @@ Responde con un array JSON:
 // Generar arquitectura Mermaid
 export async function generateArchitectureDiagram(spec: SystemSpec): Promise<string> {
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6-20251001',
+    model: 'claude-sonnet-4-6',
     max_tokens: 1024,
     messages: [{
       role: 'user',

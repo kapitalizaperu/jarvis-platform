@@ -27,7 +27,7 @@ Reglas:
 - Respuestas cortas y directas (máx 150 palabras para WhatsApp)`
 
   const response = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: 'claude-haiku-4-5',
     max_tokens: 512,
     system,
     messages: [
@@ -58,7 +58,7 @@ export async function qualifyLead(params: {
 }): Promise<{ score: number; tier: 'hot' | 'warm' | 'cold'; reasoning: string; nextStep: string }> {
 
   const response = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: 'claude-haiku-4-5',
     max_tokens: 512,
     messages: [{
       role: 'user',
@@ -89,7 +89,7 @@ export async function generateSalesProposal(params: {
   businessContext: string
 }): Promise<string> {
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6-20251001',
+    model: 'claude-sonnet-4-6',
     max_tokens: 1024,
     messages: [{
       role: 'user',

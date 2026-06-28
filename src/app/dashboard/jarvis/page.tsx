@@ -132,7 +132,6 @@ export default function JarvisPage() {
   const historyRef = useRef<{ role: string; content: string }[]>([])
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const isListeningRef = useRef(false)
-  const visionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const sessionIdRef = useRef(`session_${Date.now()}`)
 
   const now = () => new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
