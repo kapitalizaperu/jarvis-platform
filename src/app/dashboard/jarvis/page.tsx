@@ -134,6 +134,8 @@ export default function JarvisPage() {
   const summaryRef = useRef<string>('')
   const factsRef = useRef<string[]>([])
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const audioCtxRef = useRef<AudioContext | null>(null)
+  const audioSourceRef = useRef<AudioBufferSourceNode | null>(null)
   const isListeningRef = useRef(false)
   const activeRef = useRef(false)
   const sessionIdRef = useRef(`session_${Date.now()}`)
@@ -223,29 +225,79 @@ export default function JarvisPage() {
 
   useEffect(() => () => { stopCamera(); stopScreen() }, [stopCamera, stopScreen])
 
-  // ─── Speak with ElevenLabs TTS ────────────────────────────────────────────
+  // ─── Speak with ElevenLabs TTS + Web Speech API fallback ────────────────────
   const speak = useCallback(async (text: string) => {
     setStatus('speaking'); setStatusText('JARVIS habla...')
+    let played = false
+
+    // Intentar ElevenLabs primero
     try {
       const res = await fetch('/api/jarvis/tts', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text })
       })
-      if (!res.ok) throw new Error('TTS failed')
-      const blob = await res.blob()
-      const url = URL.createObjectURL(blob)
-      if (audioRef.current) { audioRef.current.pause(); URL.revokeObjectURL(audioRef.current.src) }
-      const audio = new Audio(url)
-      audioRef.current = audio
-      await new Promise<void>((resolve) => {
-        audio.onended = () => resolve()
-        audio.onerror = () => resolve()
-        audio.play().catch(() => resolve())
-      })
-      URL.revokeObjectURL(url)
-    } catch {
-      // TTS failed silently — still show text
+
+      if (res.ok) {
+        const arrayBuffer = await res.arrayBuffer()
+
+        // Usar AudioContext — evita el bloqueo de autoplay del navegador
+        try {
+          const ctx = audioCtxRef.current
+          if (ctx && ctx.state !== 'closed') {
+            if (ctx.state === 'suspended') await ctx.resume()
+            // Parar audio anterior
+            try { audioSourceRef.current?.stop() } catch {}
+            const decoded = await ctx.decodeAudioData(arrayBuffer.slice(0))
+            const source = ctx.createBufferSource()
+            source.buffer = decoded
+            source.connect(ctx.destination)
+            audioSourceRef.current = source
+            await new Promise<void>((resolve) => {
+              source.onended = () => resolve()
+              source.start(0)
+            })
+            played = true
+          }
+        } catch (ctxErr) {
+          console.warn('AudioContext falló, usando Audio element:', ctxErr)
+          // Fallback: Audio element clásico
+          const blob = new Blob([arrayBuffer], { type: 'audio/mpeg' })
+          const url = URL.createObjectURL(blob)
+          const audio = new Audio(url)
+          audioRef.current = audio
+          await new Promise<void>((resolve) => {
+            audio.onended = () => { URL.revokeObjectURL(url); resolve() }
+            audio.onerror = () => { URL.revokeObjectURL(url); resolve() }
+            audio.play().then(() => { played = true }).catch(() => resolve())
+          })
+        }
+      } else {
+        const err = await res.text()
+        console.warn('TTS API error:', err)
+      }
+    } catch (err) {
+      console.warn('ElevenLabs TTS falló:', err)
     }
+
+    // Fallback final: voz del navegador (Web Speech API) — SIEMPRE funciona
+    if (!played) {
+      console.log('Usando voz del navegador como fallback')
+      await new Promise<void>((resolve) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const synth = (window as any).speechSynthesis
+        if (!synth) { resolve(); return }
+        synth.cancel()
+        const utter = new SpeechSynthesisUtterance(text)
+        utter.lang = 'es-ES'
+        utter.rate = 0.92
+        utter.pitch = 1.05
+        utter.volume = 1
+        utter.onend = () => resolve()
+        utter.onerror = () => resolve()
+        synth.speak(utter)
+      })
+    }
+
     setStatus('idle'); setStatusText('Toca para hablar')
   }, [])
 
@@ -377,6 +429,14 @@ export default function JarvisPage() {
 
   const toggleVoice = useCallback(async () => {
     if (!activeRef.current) {
+      // Desbloquear AudioContext en el gesto del usuario (obligatorio para autoplay)
+      try {
+        if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') {
+          audioCtxRef.current = new AudioContext()
+        }
+        await audioCtxRef.current.resume()
+      } catch {}
+
       // INICIAR conversación continua
       activeRef.current = true
       isListeningRef.current = true
@@ -388,6 +448,9 @@ export default function JarvisPage() {
       isListeningRef.current = false
       recognitionRef.current?.stop()
       audioRef.current?.pause()
+      try { audioSourceRef.current?.stop() } catch {}
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      try { (window as any).speechSynthesis?.cancel() } catch {}
       setStatus('idle'); setStatusText('Toca para hablar')
     }
   }, [cameraOn, startCamera, startListeningCycle])
