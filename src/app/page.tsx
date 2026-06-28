@@ -525,7 +525,7 @@ export default function JarvisLanding() {
       <section id="contacto" style={{ padding: '120px 24px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
           <div style={{
-            background: DS.glass, backdropFilter: 'blur(20px)',
+            backdropFilter: 'blur(20px)',
             border: `1px solid rgba(0,207,255,0.18)`, borderRadius: '24px', padding: '80px 48px',
             background: 'radial-gradient(ellipse at center, rgba(0,80,255,0.08) 0%, rgba(3,13,30,0.85) 70%)',
             boxShadow: '0 0 80px rgba(0,80,255,0.08)',
