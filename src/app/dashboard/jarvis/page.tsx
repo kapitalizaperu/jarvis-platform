@@ -132,7 +132,10 @@ export default function JarvisPage() {
   const historyRef = useRef<{ role: string; content: string }[]>([])
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const isListeningRef = useRef(false)
+  const activeRef = useRef(false)
   const sessionIdRef = useRef(`session_${Date.now()}`)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const startListeningCycleRef = useRef<(() => void) | null>(null)
 
   const now = () => new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
 
@@ -218,38 +221,72 @@ export default function JarvisPage() {
     setStatus('idle'); setStatusText('Toca para hablar')
   }, [])
 
+  // ─── Continuous conversation loop ────────────────────────────────────────
+  const startListeningCycle = useCallback(() => {
+    if (!activeRef.current) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (!SR) { setStatusText('Navegador no soporta voz'); return }
+
+    const recognition = new SR()
+    recognition.lang = 'es-ES'
+    recognition.continuous = false
+    recognition.interimResults = false
+    recognitionRef.current = recognition
+
+    recognition.onstart = () => { setStatus('listening'); setStatusText('JARVIS escucha...') }
+
+    recognition.onresult = (e: { results: { [0]: { [0]: { transcript: string } } } }) => {
+      const transcript = e.results[0][0].transcript
+      if (transcript.trim()) processUserSpeech(transcript)
+    }
+
+    recognition.onerror = (e: { error: string }) => {
+      // 'no-speech' es normal — simplemente vuelve a escuchar
+      if (e.error === 'no-speech' && activeRef.current) {
+        setTimeout(() => startListeningCycleRef.current?.(), 300)
+      } else if (activeRef.current) {
+        setTimeout(() => startListeningCycleRef.current?.(), 1000)
+      }
+    }
+
+    recognition.onend = () => {
+      // Solo reinicia si la conversación sigue activa y no estamos procesando
+      if (activeRef.current && isListeningRef.current) {
+        setTimeout(() => startListeningCycleRef.current?.(), 300)
+      }
+    }
+
+    recognition.start()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep ref in sync so processUserSpeech can call it without circular dep
+  useEffect(() => { startListeningCycleRef.current = startListeningCycle }, [startListeningCycle])
+
   // ─── Process user speech ─────────────────────────────────────────────────
   const processUserSpeech = useCallback(async (text: string) => {
     if (!text.trim()) return
+    isListeningRef.current = false // pausa el loop mientras procesa
     setStatus('thinking'); setStatusText('JARVIS piensa...')
+    setMessages(p => [...p, { role: 'user', text, time: now() }])
 
-    const userMsg: Message = { role: 'user', text, time: now() }
-    setMessages(p => [...p, userMsg])
-
-    // Capture frames
     const cameraBase64 = cameraVideoRef.current && cameraOn ? captureFrame(cameraVideoRef.current) : null
     const screenBase64 = screenVideoRef.current && screenOn ? captureFrame(screenVideoRef.current, 1280, 720) : null
-
-    // Detect PC command
-    const isPcCommand = /abr[ei]|haz clic|escrib[ei]|busca|cierra|abre|click|ejecuta|ctrl|abre el/i.test(text)
+    const isPcCommand = /abr[ei]|haz clic|escrib[ei]|busca|cierra|abre|click|ejecuta|ctrl/i.test(text)
 
     try {
       const res = await fetch('/api/jarvis/vision-chat', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text,
-          cameraBase64,
-          screenBase64,
+          text, cameraBase64, screenBase64,
           sessionId: sessionIdRef.current,
-          userId: 'jose-luis',
-          tenantId: 'demo-tenant',
+          userId: 'jose-luis', tenantId: 'demo-tenant',
           history: historyRef.current,
         })
       })
       const data = await res.json()
       const reply = data.reply || 'Lo siento, hubo un error.'
 
-      // If PC command and agent connected — send to PC
       if (isPcCommand && pcConnected && wsRef.current?.readyState === 1) {
         wsRef.current.send(JSON.stringify({ type: 'task', task: text }))
         setPcRunning(true); setPcLogs([]); setPcScreenshot(null)
@@ -263,52 +300,32 @@ export default function JarvisPage() {
       setMessages(p => [...p, { role: 'jarvis', text: reply, time: now() }])
       await speak(reply)
     } catch {
-      setStatus('error'); setStatusText('Error — intenta de nuevo')
+      setStatus('error'); setStatusText('Error — toca para reintentar')
+    }
+
+    // Reanudar escucha automáticamente después de responder
+    if (activeRef.current) {
+      isListeningRef.current = true
+      setTimeout(() => startListeningCycleRef.current?.(), 400)
     }
   }, [cameraOn, screenOn, captureFrame, speak, pcConnected])
 
-  // ─── Speech Recognition ───────────────────────────────────────────────────
-  const startListening = useCallback(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-    if (!SR) { setStatusText('Navegador no soporta reconocimiento de voz'); return }
-
-    const recognition = new SR()
-    recognition.lang = 'es-ES'
-    recognition.continuous = false
-    recognition.interimResults = false
-    recognitionRef.current = recognition
-    isListeningRef.current = true
-
-    recognition.onstart = () => { setStatus('listening'); setStatusText('JARVIS escucha...') }
-    recognition.onresult = (e: { results: { [0]: { [0]: { transcript: string } } } }) => {
-      const transcript = e.results[0][0].transcript
-      processUserSpeech(transcript)
-    }
-    recognition.onerror = () => { setStatus('idle'); setStatusText('Toca para hablar') }
-    recognition.onend = () => {
-      if (status !== 'thinking' && status !== 'speaking') {
-        setStatus('idle'); setStatusText('Toca para hablar')
-      }
-    }
-    recognition.start()
-  }, [processUserSpeech, status])
-
-  const stopListening = useCallback(() => {
-    isListeningRef.current = false
-    recognitionRef.current?.stop()
-    setStatus('idle'); setStatusText('Toca para hablar')
-  }, [])
-
   const toggleVoice = useCallback(async () => {
-    if (status === 'idle' || status === 'error') {
+    if (!activeRef.current) {
+      // INICIAR conversación continua
+      activeRef.current = true
+      isListeningRef.current = true
       if (!cameraOn) await startCamera()
-      startListening()
+      startListeningCycleRef.current?.()
     } else {
-      stopListening()
+      // PARAR conversación
+      activeRef.current = false
+      isListeningRef.current = false
+      recognitionRef.current?.stop()
       audioRef.current?.pause()
+      setStatus('idle'); setStatusText('Toca para hablar')
     }
-  }, [status, cameraOn, startCamera, startListening, stopListening])
+  }, [cameraOn, startCamera, startListeningCycle])
 
   // ─── PC Control ───────────────────────────────────────────────────────────
   const connectPC = useCallback(() => {
