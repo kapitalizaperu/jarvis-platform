@@ -131,6 +131,8 @@ export default function JarvisPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
   const historyRef = useRef<{ role: string; content: string }[]>([])
+  const summaryRef = useRef<string>('')
+  const factsRef = useRef<string[]>([])
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const isListeningRef = useRef(false)
   const activeRef = useRef(false)
@@ -142,16 +144,29 @@ export default function JarvisPage() {
 
   useEffect(() => {
     setMounted(true)
-    // Cargar memoria persistente desde localStorage
+    // Cargar memoria persistente desde localStorage (3 capas)
     try {
-      const saved = localStorage.getItem('jarvis_memory_v1')
-      if (saved) {
-        const parsed = JSON.parse(saved)
+      const savedHistory = localStorage.getItem('jarvis_memory_v1')
+      if (savedHistory) {
+        const parsed = JSON.parse(savedHistory)
         if (Array.isArray(parsed) && parsed.length > 0) {
           historyRef.current = parsed
-          setMemoryCount(parsed.length)
         }
       }
+      const savedSummary = localStorage.getItem('jarvis_summary_v1')
+      if (savedSummary) summaryRef.current = savedSummary
+
+      const savedFacts = localStorage.getItem('jarvis_facts_v1')
+      if (savedFacts) {
+        const parsedFacts = JSON.parse(savedFacts)
+        if (Array.isArray(parsedFacts)) factsRef.current = parsedFacts
+      }
+
+      setMemoryCount(
+        historyRef.current.length +
+        factsRef.current.length +
+        (summaryRef.current ? 1 : 0)
+      )
     } catch { /* ignore */ }
 
     const init = async () => {
@@ -295,6 +310,8 @@ export default function JarvisPage() {
           sessionId: sessionIdRef.current,
           userId: 'jose-luis', tenantId: 'demo-tenant',
           history: historyRef.current,
+          summary: summaryRef.current || undefined,
+          facts: factsRef.current.length > 0 ? factsRef.current : undefined,
         })
       })
       const data = await res.json()
@@ -305,15 +322,45 @@ export default function JarvisPage() {
         setPcRunning(true); setPcLogs([]); setPcScreenshot(null)
       }
 
+      // Actualizar historial con nuevo intercambio
       historyRef.current = [...historyRef.current.slice(-48),
         { role: 'user', content: text },
         { role: 'assistant', content: reply }
       ]
-      // Guardar memoria persistente en el navegador
-      try {
-        localStorage.setItem('jarvis_memory_v1', JSON.stringify(historyRef.current))
-        setMemoryCount(historyRef.current.length)
-      } catch { /* ignore */ }
+
+      // Guardar historial
+      try { localStorage.setItem('jarvis_memory_v1', JSON.stringify(historyRef.current)) } catch {}
+
+      // Auto-resumir cuando el historial se llena (comprime los mensajes más viejos)
+      if (historyRef.current.length >= 40) {
+        const toSummarize = historyRef.current.slice(0, 20)
+        historyRef.current = historyRef.current.slice(20)
+        fetch('/api/jarvis/summarize-memory', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: toSummarize })
+        }).then(r => r.json()).then(({ summary }) => {
+          if (summary) {
+            summaryRef.current = summaryRef.current
+              ? `${summaryRef.current}\n\n${summary}`
+              : summary
+            try { localStorage.setItem('jarvis_summary_v1', summaryRef.current.slice(-3000)) } catch {}
+          }
+        }).catch(() => {})
+      }
+
+      // Extraer hechos nuevos sobre Jose Luis (auto-aprendizaje, no bloquea)
+      fetch('/api/jarvis/extract-facts', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userMessage: text, jarvisReply: reply, existingFacts: factsRef.current })
+      }).then(r => r.json()).then(({ facts: newFacts }) => {
+        if (newFacts?.length) {
+          factsRef.current = [...factsRef.current, ...newFacts].slice(-100)
+          try { localStorage.setItem('jarvis_facts_v1', JSON.stringify(factsRef.current)) } catch {}
+        }
+        setMemoryCount(historyRef.current.length + factsRef.current.length + (summaryRef.current ? 1 : 0))
+      }).catch(() => {
+        setMemoryCount(historyRef.current.length + factsRef.current.length)
+      })
 
       setMessages(p => [...p, { role: 'jarvis', text: reply, time: now() }])
       await speak(reply)
@@ -393,7 +440,11 @@ export default function JarvisPage() {
 
   const clearMemory = useCallback(() => {
     historyRef.current = []
+    summaryRef.current = ''
+    factsRef.current = []
     localStorage.removeItem('jarvis_memory_v1')
+    localStorage.removeItem('jarvis_summary_v1')
+    localStorage.removeItem('jarvis_facts_v1')
     setMessages([])
     setMemoryCount(0)
     setStatusText('Memoria borrada')

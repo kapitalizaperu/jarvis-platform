@@ -13,7 +13,9 @@ export async function POST(req: NextRequest) {
       sessionId = `session_${Date.now()}`,
       userId = 'jose-luis',
       tenantId = 'demo-tenant',
-      history = []
+      history = [],
+      summary = '',
+      facts = [],
     } = await req.json()
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -38,19 +40,25 @@ export async function POST(req: NextRequest) {
     }
     userContent.push({ type: 'text', text })
 
-    const systemPrompt = `Eres JARVIS, el asistente personal de IA de Jose Luis. Hablas en español, eres directo, cálido y útil.
+    const factsBlock = facts.length > 0
+      ? `\n📋 LO QUE SÉ SOBRE JOSE LUIS (memoria permanente):\n${facts.map((f: string) => `• ${f}`).join('\n')}\n`
+      : ''
+
+    const summaryBlock = summary
+      ? `\n🧠 RESUMEN DE CONVERSACIONES ANTERIORES:\n${summary}\n`
+      : ''
+
+    const systemPrompt = `Eres JARVIS, el asistente personal de IA de Jose Luis. Hablas en español, eres directo, cálido y útil. NUNCA digas que no recuerdas conversaciones pasadas — tienes memoria persistente.
 
 CAPACIDADES ACTIVAS:
 ${cameraBase64 ? '✅ CÁMARA: Puedes ver a Jose Luis en tiempo real en la imagen de arriba.' : '❌ Cámara: no activa.'}
 ${screenBase64 ? '✅ PANTALLA: Puedes ver lo que hay en su pantalla en la imagen de arriba.' : '❌ Pantalla: no activa.'}
-
-${ragContext ? `RECUERDOS DE CONVERSACIONES ANTERIORES:\n${ragContext}\n` : ''}
-
+${factsBlock}${summaryBlock}${ragContext ? `\n📜 CONTEXTO ADICIONAL:\n${ragContext}\n` : ''}
 REGLAS:
+- Usa los recuerdos y hechos anteriores para dar contexto y continuidad natural
+- Cuando Jose Luis pregunte qué recuerdas, lista hechos concretos de tu memoria
 - Si ves imágenes, descríbelas con precisión (cara, expresión, actividad)
 - Respuestas cortas y naturales para voz (máximo 3 oraciones)
-- Usa los recuerdos anteriores para dar contexto y continuidad
-- Si alguien pregunta qué recuerdas, menciona conversaciones pasadas
 - Si NO hay imagen de cámara y preguntan si puedes ver: pide que activen la cámara`
 
     const messages = [
