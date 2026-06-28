@@ -54,7 +54,7 @@ REGLAS:
 - Si NO hay imagen de cámara y preguntan si puedes ver: pide que activen la cámara`
 
     const messages = [
-      ...history.slice(-6),
+      ...history.slice(-20),
       { role: 'user' as const, content: userContent }
     ]
 

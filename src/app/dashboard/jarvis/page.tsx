@@ -119,6 +119,7 @@ export default function JarvisPage() {
   const [redesigning, setRedesigning] = useState(false)
   const [statusText, setStatusText] = useState('Toca para hablar')
   const [mounted, setMounted] = useState(false)
+  const [memoryCount, setMemoryCount] = useState(0)
 
   const cameraVideoRef = useRef<HTMLVideoElement>(null)
   const screenVideoRef = useRef<HTMLVideoElement>(null)
@@ -141,6 +142,18 @@ export default function JarvisPage() {
 
   useEffect(() => {
     setMounted(true)
+    // Cargar memoria persistente desde localStorage
+    try {
+      const saved = localStorage.getItem('jarvis_memory_v1')
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          historyRef.current = parsed
+          setMemoryCount(parsed.length)
+        }
+      }
+    } catch { /* ignore */ }
+
     const init = async () => {
       const { gsap } = await import('gsap')
       gsap.fromTo('.j-header', { y: -30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out' })
@@ -292,10 +305,15 @@ export default function JarvisPage() {
         setPcRunning(true); setPcLogs([]); setPcScreenshot(null)
       }
 
-      historyRef.current = [...historyRef.current.slice(-8),
+      historyRef.current = [...historyRef.current.slice(-48),
         { role: 'user', content: text },
         { role: 'assistant', content: reply }
       ]
+      // Guardar memoria persistente en el navegador
+      try {
+        localStorage.setItem('jarvis_memory_v1', JSON.stringify(historyRef.current))
+        setMemoryCount(historyRef.current.length)
+      } catch { /* ignore */ }
 
       setMessages(p => [...p, { role: 'jarvis', text: reply, time: now() }])
       await speak(reply)
@@ -373,6 +391,15 @@ export default function JarvisPage() {
     setRedesigning(false)
   }, [redesignUrl, redesignNote])
 
+  const clearMemory = useCallback(() => {
+    historyRef.current = []
+    localStorage.removeItem('jarvis_memory_v1')
+    setMessages([])
+    setMemoryCount(0)
+    setStatusText('Memoria borrada')
+    setTimeout(() => setStatusText('Toca para hablar'), 2000)
+  }, [])
+
   const isActive = status !== 'idle' && status !== 'error'
   const btnColor = status === 'listening' ? '#00FF88' : status === 'speaking' ? '#00CFFF' : status === 'thinking' ? '#FFD700' : '#00CFFF'
 
@@ -409,6 +436,10 @@ export default function JarvisPage() {
               <span style={{ color: s.on ? s.color : '#2a4a6a' }}>{s.label}</span>
             </div>
           ))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '10px', color: 'rgba(0,200,255,0.4)', letterSpacing: '0.1em', border: '1px solid rgba(0,200,255,0.1)', borderRadius: '6px', padding: '4px 10px' }}>
+            🧠 {memoryCount} recuerdos
+          </div>
+          <button onClick={clearMemory} style={{ padding: '4px 12px', background: 'transparent', border: '1px solid rgba(255,80,80,0.2)', borderRadius: '6px', color: 'rgba(255,100,100,0.6)', cursor: 'pointer', fontSize: '11px' }}>🗑️ Borrar</button>
           <button onClick={() => setShowRedesign(v => !v)} style={{ padding: '4px 12px', background: 'transparent', border: '1px solid rgba(0,200,255,0.2)', borderRadius: '6px', color: '#00CFFF', cursor: 'pointer', fontSize: '11px' }}>🎨 DISEÑAR</button>
         </div>
       </div>
