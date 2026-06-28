@@ -109,8 +109,8 @@ export default function JarvisDashboard() {
             style={{ color:'#555', background:'none', border:'none', cursor:'pointer', fontSize:'12px', fontFamily:'Space Grotesk' }}>Clientes</button>
           <button onClick={() => router.push('/dashboard/analytics')}
             style={{ color:'#555', background:'none', border:'none', cursor:'pointer', fontSize:'12px', fontFamily:'Space Grotesk' }}>Analytics</button>
-          <button onClick={() => router.push('/dashboard/voice')}
-            style={{ color:'#00F5FF', background:'rgba(0,245,255,0.1)', border:'1px solid rgba(0,245,255,0.2)', borderRadius:'6px', cursor:'pointer', fontSize:'12px', fontFamily:'Space Grotesk', padding:'4px 10px', fontWeight:'700' }}>🎙️ Voz</button>
+          <button onClick={() => router.push('/dashboard/jarvis')}
+            style={{ color:'#00F5FF', background:'rgba(0,245,255,0.15)', border:'1px solid rgba(0,245,255,0.4)', borderRadius:'6px', cursor:'pointer', fontSize:'12px', fontFamily:'Space Grotesk', padding:'4px 14px', fontWeight:'900', boxShadow:'0 0 20px rgba(0,245,255,0.2)' }}>⚡ JARVIS</button>
           <button onClick={() => router.push('/dashboard/vision')}
             style={{ color:'#00FF88', background:'rgba(0,255,136,0.1)', border:'1px solid rgba(0,255,136,0.2)', borderRadius:'6px', cursor:'pointer', fontSize:'12px', fontFamily:'Space Grotesk', padding:'4px 10px', fontWeight:'700' }}>👁️ Visión</button>
           <button onClick={() => router.push('/dashboard/computer-use')}
