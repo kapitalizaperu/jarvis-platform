@@ -109,13 +109,6 @@ export default function VoicePage() {
       const { Conversation } = await import('@11labs/client')
       const conversation = await Conversation.startSession({
         agentId: AGENT_ID,
-        clientTools: {
-          // JARVIS puede pedir ver la cámara en medio de la conversación
-          ver_camara: async () => {
-            await analyzeCamera()
-            return lastSeen || 'No puedo ver nada en este momento'
-          },
-        },
         onConnect: () => setStatus('connected'),
         onDisconnect: () => { setStatus('idle'); conversationRef.current = null },
         onError: (err: unknown) => {
