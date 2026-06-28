@@ -1,18 +1,35 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
+
+// ─── Design Tokens ────────────────────────────────────────────────────────────
+const DS = {
+  bg: '#020B18',
+  surface: '#030D1E',
+  primary: '#00CFFF',
+  secondary: '#0050FF',
+  accent: '#00FF88',
+  warning: '#FFD700',
+  text: '#ffffff',
+  muted: 'rgba(0,200,255,0.4)',
+  border: 'rgba(0,200,255,0.12)',
+  font: "'Space Grotesk', sans-serif",
+  glass: 'rgba(3,13,30,0.85)',
+  glow: '0 0 30px rgba(0,200,255,0.15)',
+  gradientText: 'linear-gradient(135deg, #00CFFF, #0050FF)',
+}
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
 const AGENTS = [
-  { icon: '🧠', name: 'Orquestador', desc: 'El cerebro central. Coordina todos los agentes y toma decisiones en milisegundos.', color: '#00F5FF' },
-  { icon: '📱', name: 'Marketing', desc: 'Crea y publica contenido en todas las redes. Analiza métricas y optimiza campañas solo.', color: '#9B59B6' },
-  { icon: '💻', name: 'Desarrollo', desc: 'Con Jules AI escribe, despliega y mantiene código completo sin intervención humana.', color: '#00F5FF' },
+  { icon: '🧠', name: 'Orquestador', desc: 'El cerebro central. Coordina todos los agentes y toma decisiones en milisegundos.', color: '#00CFFF' },
+  { icon: '📱', name: 'Marketing', desc: 'Crea y publica contenido en todas las redes. Analiza métricas y optimiza campañas solo.', color: '#0050FF' },
+  { icon: '💻', name: 'Desarrollo', desc: 'Con Jules AI escribe, despliega y mantiene código completo sin intervención humana.', color: '#00CFFF' },
   { icon: '🎯', name: 'Ventas', desc: 'Atiende clientes por WhatsApp, email y llamadas. Cierra tratos mientras duermes.', color: '#FFD700' },
-  { icon: '🎬', name: 'Video & Contenido', desc: 'Genera videos personalizados con HeyGen, clona tu voz y produce contenido 4K.', color: '#9B59B6' },
+  { icon: '🎬', name: 'Video & Contenido', desc: 'Genera videos personalizados con HeyGen, clona tu voz y produce contenido 4K.', color: '#0050FF' },
   { icon: '💰', name: 'Financiero', desc: 'Analiza bolsa, gestiona facturas, genera estados de cuenta y detecta anomalías.', color: '#FFD700' },
-  { icon: '👥', name: 'Recursos Humanos', desc: 'Recluta, onboarda y gestiona tu equipo con IA. Evaluaciones y nóminas automáticas.', color: '#00F5FF' },
-  { icon: '📅', name: 'Personal', desc: 'Tu asistente de vida: agenda, familia, recordatorios, viajes y todo lo personal.', color: '#9B59B6' },
+  { icon: '👥', name: 'Recursos Humanos', desc: 'Recluta, onboarda y gestiona tu equipo con IA. Evaluaciones y nóminas automáticas.', color: '#00CFFF' },
+  { icon: '📅', name: 'Personal', desc: 'Tu asistente de vida: agenda, familia, recordatorios, viajes y todo lo personal.', color: '#0050FF' },
 ]
 
 const AI_STACK = [
@@ -42,7 +59,7 @@ const PLANS = [
       'Soporte prioritario',
     ],
     cta: 'Empezar como agencia',
-    color: '#00F5FF',
+    color: '#00CFFF',
     highlight: false,
   },
   {
@@ -79,7 +96,7 @@ const PLANS = [
       'Integración con su punto de venta',
     ],
     cta: 'Para mis clientes',
-    color: '#9B59B6',
+    color: '#0050FF',
     highlight: false,
   },
 ]
@@ -95,75 +112,10 @@ const FEATURES = [
   { icon: '🤖', title: 'Aprende Solo', desc: 'RAG + memoria persistente. JARVIS mejora con cada interacción' },
 ]
 
-// ─── Particle Background ──────────────────────────────────────────────────────
-
-function Particles() {
-  return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-      {Array.from({ length: 30 }).map((_, i) => (
-        <div
-          key={i}
-          className="absolute rounded-full"
-          style={{
-            width: Math.random() * 3 + 1 + 'px',
-            height: Math.random() * 3 + 1 + 'px',
-            left: Math.random() * 100 + '%',
-            background: i % 3 === 0 ? '#00F5FF' : i % 3 === 1 ? '#9B59B6' : '#FFD700',
-            opacity: Math.random() * 0.5 + 0.1,
-            animation: `particle ${Math.random() * 15 + 10}s linear ${Math.random() * 10}s infinite`,
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
-// ─── JARVIS Circle ────────────────────────────────────────────────────────────
-
-function JarvisOrb({ active }: { active: boolean }) {
-  return (
-    <div className="relative flex items-center justify-center w-64 h-64 mx-auto">
-      {/* Outer rings */}
-      <div className="absolute inset-0 rounded-full border border-cyan-400/10 animate-spin-slow" />
-      <div className="absolute inset-4 rounded-full border border-purple-500/20" style={{ animation: 'spin-slow 15s linear infinite reverse' }} />
-      <div className="absolute inset-8 rounded-full border border-yellow-400/10 animate-spin-slow" style={{ animationDuration: '8s' }} />
-
-      {/* Glow */}
-      <div className="absolute inset-16 rounded-full blur-xl" style={{ background: active ? 'rgba(0,245,255,0.3)' : 'rgba(0,245,255,0.1)', transition: 'all 0.5s' }} />
-
-      {/* Core */}
-      <div
-        className="relative z-10 w-32 h-32 rounded-full flex items-center justify-center text-5xl"
-        style={{
-          background: 'radial-gradient(circle at 30% 30%, rgba(0,245,255,0.3), rgba(155,89,182,0.2), #0A0A0A)',
-          border: '1px solid rgba(0,245,255,0.4)',
-          boxShadow: active ? '0 0 60px rgba(0,245,255,0.5), 0 0 120px rgba(0,245,255,0.2)' : '0 0 30px rgba(0,245,255,0.2)',
-          transition: 'all 0.5s',
-        }}
-      >
-        🤖
-      </div>
-
-      {/* Orbiting dots */}
-      {[0, 60, 120, 180, 240, 300].map((deg, i) => (
-        <div
-          key={i}
-          className="absolute w-2 h-2 rounded-full"
-          style={{
-            background: i % 2 === 0 ? '#00F5FF' : '#9B59B6',
-            top: '50%',
-            left: '50%',
-            transform: `rotate(${deg}deg) translateX(120px) translateY(-50%)`,
-            boxShadow: `0 0 8px ${i % 2 === 0 ? '#00F5FF' : '#9B59B6'}`,
-          }}
-        />
-      ))}
-    </div>
-  )
-}
+// ─── Grid Background ──────────────────────────────────────────────────────────
+const GRID_SVG = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M 60 0 L 0 0 0 60' fill='none' stroke='rgba(0,200,255,0.04)' stroke-width='1'/%3E%3C/svg%3E")`
 
 // ─── Typing Effect ────────────────────────────────────────────────────────────
-
 function TypeWriter({ texts }: { texts: string[] }) {
   const [current, setCurrent] = useState(0)
   const [displayed, setDisplayed] = useState('')
@@ -190,161 +142,195 @@ function TypeWriter({ texts }: { texts: string[] }) {
   }, [displayed, deleting, current, texts])
 
   return (
-    <span className="text-gradient-cyan">
-      {displayed}<span className="animate-blink">|</span>
+    <span style={{ background: DS.gradientText, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+      {displayed}<span style={{ opacity: 0.8 }}>|</span>
     </span>
   )
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
-
 export default function JarvisLanding() {
-  const [orbActive, setOrbActive] = useState(false)
   const [activeAgent, setActiveAgent] = useState<number | null>(null)
 
-  useEffect(() => {
-    const t = setTimeout(() => setOrbActive(true), 1000)
-    return () => clearTimeout(t)
-  }, [])
-
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-white overflow-x-hidden">
-      <Particles />
+    <div style={{
+      minHeight: '100vh',
+      background: DS.bg,
+      backgroundImage: GRID_SVG,
+      color: DS.text,
+      fontFamily: DS.font,
+      overflowX: 'hidden',
+    }}>
+      {/* Global keyframes */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800;900&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        @keyframes pulse-glow {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 1; }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-12px); }
+        }
+        @keyframes spin-slow {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .nav-link:hover { color: #00CFFF !important; }
+        .cta-btn:hover { opacity: 0.9; transform: translateY(-2px); }
+        .ghost-btn:hover { border-color: rgba(0,200,255,0.4) !important; }
+        .agent-card:hover { transform: translateY(-4px); }
+        .feature-card:hover { border-color: rgba(0,200,255,0.25) !important; }
+      `}</style>
 
       {/* ── NAV ── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-black"
-              style={{ background: 'linear-gradient(135deg, #00F5FF20, #9B59B620)', border: '1px solid rgba(0,245,255,0.3)' }}
-            >
-              J
-            </div>
-            <span className="font-black text-xl tracking-tight" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-              JARVIS
-            </span>
-            <span
-              className="text-xs px-2 py-0.5 rounded-full font-medium"
-              style={{ background: 'rgba(0,245,255,0.1)', color: '#00F5FF', border: '1px solid rgba(0,245,255,0.2)' }}
-            >
-              BETA
-            </span>
+      <nav style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
+        background: 'rgba(2,11,24,0.85)', backdropFilter: 'blur(20px)',
+        borderBottom: `1px solid ${DS.border}`,
+      }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '36px', height: '36px', borderRadius: '10px',
+              background: 'rgba(0,207,255,0.1)', border: `1px solid rgba(0,207,255,0.3)`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 900, fontSize: '14px', color: DS.primary,
+            }}>J</div>
+            <span style={{ fontWeight: 900, fontSize: '20px', letterSpacing: '-0.5px' }}>JARVIS</span>
+            <span style={{
+              fontSize: '11px', padding: '2px 8px', borderRadius: '100px',
+              background: 'rgba(0,207,255,0.08)', color: DS.primary, border: `1px solid rgba(0,207,255,0.2)`,
+              fontWeight: 600, letterSpacing: '0.5px',
+            }}>BETA</span>
           </div>
 
-          <div className="hidden md:flex items-center gap-8 text-sm text-gray-400">
+          {/* Nav links */}
+          <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
             {['Capacidades', 'Agentes', 'Precios', 'Marketplace'].map(item => (
-              <a key={item} href={`#${item.toLowerCase()}`} className="hover:text-white transition-colors">{item}</a>
+              <a key={item} href={`#${item.toLowerCase()}`} className="nav-link" style={{
+                color: 'rgba(255,255,255,0.5)', fontSize: '14px', textDecoration: 'none', transition: 'color 0.2s',
+              }}>{item}</a>
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
-            <a href="/login" className="text-sm text-gray-400 hover:text-white transition-colors">Entrar</a>
-            <a
-              href="#precios"
-              className="text-sm font-semibold px-5 py-2.5 rounded-xl transition-all"
-              style={{ background: 'linear-gradient(135deg, #00F5FF, #9B59B6)', color: '#0A0A0A' }}
-            >
-              Empezar →
-            </a>
+          {/* CTA */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <a href="/auth/login" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', textDecoration: 'none' }}>Entrar</a>
+            <a href="#precios" className="cta-btn" style={{
+              fontSize: '14px', fontWeight: 700, padding: '10px 20px', borderRadius: '12px',
+              background: DS.gradientText, color: DS.bg, textDecoration: 'none', transition: 'all 0.2s',
+              display: 'inline-block',
+            }}>Empezar →</a>
           </div>
         </div>
       </nav>
 
       {/* ── HERO ── */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-6 pt-24 grid-lines mesh-gradient">
-
+      <section style={{
+        minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center',
+        justifyContent: 'center', textAlign: 'center', padding: '120px 24px 80px',
+        background: 'radial-gradient(ellipse at 50% 0%, rgba(0,80,255,0.12) 0%, transparent 60%)',
+      }}>
         {/* Badge */}
-        <div
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm mb-10"
-          style={{ background: 'rgba(0,245,255,0.05)', border: '1px solid rgba(0,245,255,0.2)', color: '#00F5FF' }}
-        >
-          <span className="w-2 h-2 rounded-full animate-pulse-cyan" style={{ background: '#00F5FF' }} />
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: '8px',
+          padding: '8px 20px', borderRadius: '100px', marginBottom: '40px',
+          background: 'rgba(0,207,255,0.05)', border: `1px solid rgba(0,207,255,0.2)`, color: DS.primary,
+          fontSize: '13px', fontWeight: 500,
+        }}>
+          <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: DS.accent, display: 'inline-block', animation: 'pulse-glow 2s ease-in-out infinite' }} />
           10 IAs trabajando en paralelo · Disponible en LATAM
         </div>
 
-        {/* Orb */}
-        <div className="mb-10">
-          <JarvisOrb active={orbActive} />
+        {/* Orb visual */}
+        <div style={{ width: '180px', height: '180px', position: 'relative', margin: '0 auto 48px', animation: 'float 6s ease-in-out infinite' }}>
+          <div style={{
+            position: 'absolute', inset: 0, borderRadius: '50%',
+            border: '1px solid rgba(0,207,255,0.1)', animation: 'spin-slow 20s linear infinite',
+          }} />
+          <div style={{
+            position: 'absolute', inset: '12px', borderRadius: '50%',
+            border: '1px solid rgba(0,80,255,0.15)', animation: 'spin-slow 14s linear infinite reverse',
+          }} />
+          <div style={{
+            position: 'absolute', inset: '30px', borderRadius: '50%',
+            background: 'radial-gradient(circle at 35% 35%, rgba(0,207,255,0.25), rgba(0,80,255,0.15), transparent)',
+            border: `1px solid rgba(0,207,255,0.3)`,
+            boxShadow: `0 0 60px rgba(0,207,255,0.2), inset 0 0 40px rgba(0,80,255,0.1)`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px',
+          }}>🤖</div>
         </div>
 
         {/* Headline */}
-        <h1
-          className="text-5xl md:text-7xl lg:text-8xl font-black leading-none mb-6"
-          style={{ fontFamily: 'Space Grotesk, sans-serif', letterSpacing: '-0.03em' }}
-        >
+        <h1 style={{
+          fontSize: 'clamp(44px, 8vw, 88px)', fontWeight: 900, lineHeight: 1.0,
+          letterSpacing: '-0.03em', marginBottom: '24px', fontFamily: DS.font,
+        }}>
           El cerebro de IA<br />
           que{' '}
-          <TypeWriter texts={[
-            'vende por ti.',
-            'programa solo.',
-            'nunca duerme.',
-            'escala tu empresa.',
-            'hace llamadas.',
-            'crea contenido.',
-          ]} />
+          <TypeWriter texts={['vende por ti.', 'programa solo.', 'nunca duerme.', 'escala tu empresa.', 'hace llamadas.', 'crea contenido.']} />
         </h1>
 
-        <p className="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto mb-10 leading-relaxed">
+        <p style={{ fontSize: '20px', color: 'rgba(255,255,255,0.55)', maxWidth: '640px', margin: '0 auto 40px', lineHeight: 1.7 }}>
           JARVIS es la plataforma de IA empresarial omnicanal con{' '}
-          <strong className="text-white">9 agentes especializados</strong>,{' '}
+          <strong style={{ color: DS.text }}>9 agentes especializados</strong>,{' '}
           voz humana real, videos con avatar y capacidad de escribir y desplegar código solo.
-          Todo en un sistema que tú controlas.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-          <a
-            href="#precios"
-            className="px-10 py-4 rounded-2xl font-bold text-lg transition-all hover:scale-105"
-            style={{ background: 'linear-gradient(135deg, #00F5FF, #9B59B6)', color: '#0A0A0A' }}
-          >
-            Activar JARVIS →
-          </a>
-          <a
-            href="#capacidades"
-            className="px-10 py-4 rounded-2xl font-semibold text-lg glass border border-white/10 hover:border-white/20 transition-all"
-          >
-            Ver capacidades
-          </a>
+        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '64px' }}>
+          <a href="#precios" className="cta-btn" style={{
+            padding: '16px 36px', borderRadius: '14px', fontWeight: 700, fontSize: '17px',
+            background: DS.gradientText, color: DS.bg, textDecoration: 'none', transition: 'all 0.2s',
+            boxShadow: '0 0 40px rgba(0,207,255,0.2)',
+          }}>Activar JARVIS →</a>
+          <a href="#capacidades" className="ghost-btn" style={{
+            padding: '16px 36px', borderRadius: '14px', fontWeight: 600, fontSize: '17px',
+            background: 'rgba(3,13,30,0.85)', backdropFilter: 'blur(20px)',
+            border: `1px solid ${DS.border}`, color: DS.text, textDecoration: 'none', transition: 'all 0.2s',
+          }}>Ver capacidades</a>
         </div>
 
         {/* AI Stack pills */}
-        <div className="flex flex-wrap justify-center gap-2 max-w-2xl">
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', maxWidth: '700px', margin: '0 auto' }}>
           {AI_STACK.map(ai => (
-            <div
-              key={ai.name}
-              className="text-xs px-3 py-1.5 rounded-full glass"
-              style={{ border: '1px solid rgba(255,255,255,0.08)', color: '#aaa' }}
-            >
-              {ai.name} · <span className="text-gray-500">{ai.use}</span>
+            <div key={ai.name} style={{
+              fontSize: '12px', padding: '6px 14px', borderRadius: '100px',
+              background: 'rgba(3,13,30,0.85)', backdropFilter: 'blur(20px)',
+              border: `1px solid ${DS.border}`, color: 'rgba(255,255,255,0.4)',
+            }}>
+              {ai.name} <span style={{ color: 'rgba(255,255,255,0.2)', margin: '0 4px' }}>·</span> {ai.use}
             </div>
           ))}
         </div>
       </section>
 
       {/* ── FEATURES ── */}
-      <section id="capacidades" className="py-32 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-20">
-            <p className="text-sm font-semibold mb-4" style={{ color: '#00F5FF', letterSpacing: '0.2em' }}>CAPACIDADES</p>
-            <h2 className="text-4xl md:text-6xl font-black mb-6" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+      <section id="capacidades" style={{ padding: '120px 24px' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '80px' }}>
+            <p style={{ fontSize: '12px', fontWeight: 700, color: DS.primary, letterSpacing: '0.2em', marginBottom: '16px', textTransform: 'uppercase' }}>Capacidades</p>
+            <h2 style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 900, marginBottom: '20px', fontFamily: DS.font }}>
               Una IA que hace todo
             </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+            <p style={{ fontSize: '18px', color: 'rgba(255,255,255,0.5)', maxWidth: '560px', margin: '0 auto' }}>
               No es un chatbot. Es un sistema operativo de inteligencia artificial para tu empresa.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
             {FEATURES.map((f, i) => (
-              <div
-                key={i}
-                className="glass rounded-2xl p-6 hover:border-cyan-400/30 transition-all group cursor-default"
-                style={{ border: '1px solid rgba(255,255,255,0.06)' }}
-              >
-                <div className="text-3xl mb-4">{f.icon}</div>
-                <h3 className="font-bold text-lg mb-2 group-hover:text-gradient-cyan transition-all">{f.title}</h3>
-                <p className="text-sm text-gray-400 leading-relaxed">{f.desc}</p>
+              <div key={i} className="feature-card" style={{
+                background: DS.glass, backdropFilter: 'blur(20px)',
+                border: `1px solid ${DS.border}`, borderRadius: '16px', padding: '28px',
+                transition: 'all 0.2s', cursor: 'default',
+              }}>
+                <div style={{ fontSize: '32px', marginBottom: '16px' }}>{f.icon}</div>
+                <h3 style={{ fontWeight: 700, fontSize: '17px', marginBottom: '8px', color: DS.text }}>{f.title}</h3>
+                <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>{f.desc}</p>
               </div>
             ))}
           </div>
@@ -352,112 +338,120 @@ export default function JarvisLanding() {
       </section>
 
       {/* ── AGENTES ── */}
-      <section id="agentes" className="py-32 px-6" style={{ background: 'rgba(0,245,255,0.02)' }}>
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-20">
-            <p className="text-sm font-semibold mb-4" style={{ color: '#9B59B6', letterSpacing: '0.2em' }}>AGENTES ESPECIALIZADOS</p>
-            <h2 className="text-4xl md:text-6xl font-black mb-6" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+      <section id="agentes" style={{ padding: '120px 24px', background: 'rgba(0,80,255,0.03)' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '80px' }}>
+            <p style={{ fontSize: '12px', fontWeight: 700, color: DS.secondary, letterSpacing: '0.2em', marginBottom: '16px', textTransform: 'uppercase' }}>Agentes Especializados</p>
+            <h2 style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 900, marginBottom: '20px', fontFamily: DS.font }}>
               9 expertos trabajando<br />por tu empresa
             </h2>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+            <p style={{ fontSize: '18px', color: 'rgba(255,255,255,0.5)', maxWidth: '560px', margin: '0 auto' }}>
               Cada agente es un especialista. El Orquestador los coordina a todos en tiempo real.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
             {AGENTS.map((agent, i) => (
               <div
                 key={i}
-                className="glass rounded-2xl p-6 cursor-pointer transition-all duration-300"
+                className="agent-card"
                 style={{
-                  border: `1px solid ${activeAgent === i ? agent.color + '50' : 'rgba(255,255,255,0.06)'}`,
-                  boxShadow: activeAgent === i ? `0 0 30px ${agent.color}20` : 'none',
-                  transform: activeAgent === i ? 'translateY(-4px)' : 'none',
+                  background: DS.glass, backdropFilter: 'blur(20px)',
+                  border: `1px solid ${activeAgent === i ? agent.color + '40' : DS.border}`,
+                  borderRadius: '16px', padding: '28px', cursor: 'pointer',
+                  transition: 'all 0.25s',
+                  boxShadow: activeAgent === i ? `0 0 30px ${agent.color}15` : 'none',
                 }}
                 onMouseEnter={() => setActiveAgent(i)}
                 onMouseLeave={() => setActiveAgent(null)}
               >
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl mb-4"
-                  style={{ background: agent.color + '15', border: `1px solid ${agent.color}30` }}
-                >
-                  {agent.icon}
-                </div>
-                <h3 className="font-bold text-lg mb-2" style={{ color: activeAgent === i ? agent.color : 'white' }}>
+                <div style={{
+                  width: '48px', height: '48px', borderRadius: '12px', fontSize: '24px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px',
+                  background: agent.color + '12', border: `1px solid ${agent.color}25`,
+                }}>{agent.icon}</div>
+                <h3 style={{ fontWeight: 700, fontSize: '17px', marginBottom: '8px', color: activeAgent === i ? agent.color : DS.text }}>
                   {agent.name}
                 </h3>
-                <p className="text-sm text-gray-400 leading-relaxed">{agent.desc}</p>
+                <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>{agent.desc}</p>
               </div>
             ))}
           </div>
 
-          {/* Create on demand */}
-          <div
-            className="mt-8 glass rounded-2xl p-8 text-center"
-            style={{ border: '1px solid rgba(255,215,0,0.2)' }}
-          >
-            <p className="text-2xl mb-2">✨</p>
-            <h3 className="font-bold text-xl mb-2 text-gradient-gold">+ Crea agentes nuevos por voz</h3>
-            <p className="text-gray-400">
-              Di <span className="text-white font-mono text-sm px-2 py-1 rounded" style={{ background: 'rgba(255,255,255,0.05)' }}>"JARVIS, necesito un agente de logística"</span> y lo crea en minutos.
+          <div style={{
+            marginTop: '24px', background: DS.glass, backdropFilter: 'blur(20px)',
+            border: `1px solid rgba(255,215,0,0.15)`, borderRadius: '16px',
+            padding: '32px', textAlign: 'center',
+          }}>
+            <p style={{ fontSize: '24px', marginBottom: '8px' }}>✨</p>
+            <h3 style={{ fontWeight: 700, fontSize: '20px', marginBottom: '8px', background: 'linear-gradient(135deg, #FFD700, #00CFFF)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              + Crea agentes nuevos por voz
+            </h3>
+            <p style={{ color: 'rgba(255,255,255,0.45)' }}>
+              Di <span style={{ background: 'rgba(255,255,255,0.06)', padding: '2px 10px', borderRadius: '6px', fontFamily: 'monospace', fontSize: '13px', color: DS.text }}>"JARVIS, necesito un agente de logística"</span> y lo crea en minutos.
             </p>
           </div>
         </div>
       </section>
 
       {/* ── MARKETPLACE ── */}
-      <section id="marketplace" className="py-32 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+      <section id="marketplace" style={{ padding: '120px 24px' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'center' }}>
             <div>
-              <p className="text-sm font-semibold mb-4" style={{ color: '#FFD700', letterSpacing: '0.2em' }}>MARKETPLACE</p>
-              <h2 className="text-4xl md:text-5xl font-black mb-6" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+              <p style={{ fontSize: '12px', fontWeight: 700, color: DS.warning, letterSpacing: '0.2em', marginBottom: '16px', textTransform: 'uppercase' }}>Marketplace</p>
+              <h2 style={{ fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 900, marginBottom: '24px', fontFamily: DS.font }}>
                 Un ecosistema que<br />crece solo
               </h2>
-              <p className="text-lg text-gray-400 mb-8 leading-relaxed">
-                JARVIS se conecta a GitHub y busca nuevas capacidades automáticamente.
-                Desarrolladores externos crean plugins y ganan comisiones. Tú tienes un sistema
-                que se vuelve más poderoso con el tiempo sin que hagas nada.
+              <p style={{ fontSize: '17px', color: 'rgba(255,255,255,0.5)', marginBottom: '36px', lineHeight: 1.7 }}>
+                JARVIS se conecta a GitHub y busca nuevas capacidades automáticamente. Desarrolladores externos crean plugins y ganan comisiones.
               </p>
-              <div className="space-y-4">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {[
                   { icon: '🐙', text: 'Busca skills en GitHub automáticamente' },
                   { icon: '⭐', text: 'Evalúa calidad por stars y actividad antes de instalar' },
                   { icon: '🔒', text: 'Sandbox seguro — prueba antes de activar en producción' },
                   { icon: '💸', text: 'Comisiones automáticas para desarrolladores externos' },
                 ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <span className="text-xl">{item.icon}</span>
-                    <span className="text-gray-300">{item.text}</span>
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '20px' }}>{item.icon}</span>
+                    <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '15px' }}>{item.text}</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="glass rounded-3xl p-8" style={{ border: '1px solid rgba(255,215,0,0.15)' }}>
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="font-bold text-lg">Skills instaladas</h3>
-                <span className="text-xs px-2 py-1 rounded-full" style={{ background: 'rgba(0,245,255,0.1)', color: '#00F5FF' }}>247 disponibles</span>
+            <div style={{
+              background: DS.glass, backdropFilter: 'blur(20px)',
+              border: `1px solid rgba(255,215,0,0.12)`, borderRadius: '20px', padding: '32px',
+              boxShadow: DS.glow,
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h3 style={{ fontWeight: 700, fontSize: '17px' }}>Skills instaladas</h3>
+                <span style={{ fontSize: '12px', padding: '4px 10px', borderRadius: '100px', background: 'rgba(0,207,255,0.1)', color: DS.primary }}>247 disponibles</span>
               </div>
-              <div className="space-y-3">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {[
                   { name: 'sentiment-analyzer', stars: '2.4k', status: 'activo' },
                   { name: 'invoice-generator', stars: '891', status: 'activo' },
                   { name: 'lead-scorer', stars: '1.2k', status: 'instalando...' },
                   { name: 'competitor-monitor', stars: '634', status: 'sandbox' },
                 ].map((skill, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                    <div className="flex items-center gap-3">
-                      <span className="text-gray-600">🐙</span>
-                      <span className="text-sm font-mono text-gray-300">{skill.name}</span>
+                  <div key={i} style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    padding: '12px 16px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)',
+                    border: `1px solid ${DS.border}`,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '14px' }}>🐙</span>
+                      <span style={{ fontSize: '13px', fontFamily: 'monospace', color: 'rgba(255,255,255,0.7)' }}>{skill.name}</span>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-gray-500">⭐ {skill.stars}</span>
-                      <span className="text-xs px-2 py-0.5 rounded-full" style={{
-                        background: skill.status === 'activo' ? 'rgba(0,245,255,0.1)' : skill.status === 'sandbox' ? 'rgba(255,215,0,0.1)' : 'rgba(155,89,182,0.1)',
-                        color: skill.status === 'activo' ? '#00F5FF' : skill.status === 'sandbox' ? '#FFD700' : '#9B59B6',
-                      }}>
-                        {skill.status}
-                      </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>⭐ {skill.stars}</span>
+                      <span style={{
+                        fontSize: '11px', padding: '3px 8px', borderRadius: '100px',
+                        background: skill.status === 'activo' ? 'rgba(0,255,136,0.1)' : skill.status === 'sandbox' ? 'rgba(255,215,0,0.1)' : 'rgba(0,80,255,0.1)',
+                        color: skill.status === 'activo' ? DS.accent : skill.status === 'sandbox' ? DS.warning : DS.secondary,
+                      }}>{skill.status}</span>
                     </div>
                   </div>
                 ))}
@@ -468,66 +462,59 @@ export default function JarvisLanding() {
       </section>
 
       {/* ── PRICING ── */}
-      <section id="precios" className="py-32 px-6" style={{ background: 'rgba(155,89,182,0.02)' }}>
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-20">
-            <p className="text-sm font-semibold mb-4" style={{ color: '#9B59B6', letterSpacing: '0.2em' }}>PRECIOS</p>
-            <h2 className="text-4xl md:text-6xl font-black mb-6" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+      <section id="precios" style={{ padding: '120px 24px', background: 'rgba(0,80,255,0.03)' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '80px' }}>
+            <p style={{ fontSize: '12px', fontWeight: 700, color: DS.secondary, letterSpacing: '0.2em', marginBottom: '16px', textTransform: 'uppercase' }}>Precios</p>
+            <h2 style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 900, marginBottom: '16px', fontFamily: DS.font }}>
               Planes que crecen<br />contigo
             </h2>
-            <p className="text-xl text-gray-400">Sin permanencia. Cancela cuando quieras.</p>
+            <p style={{ fontSize: '18px', color: 'rgba(255,255,255,0.5)' }}>Sin permanencia. Cancela cuando quieras.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', alignItems: 'start' }}>
             {PLANS.map((plan, i) => (
-              <div
-                key={i}
-                className="relative glass rounded-3xl p-8 transition-all"
-                style={{
-                  border: `1px solid ${plan.highlight ? plan.color + '40' : 'rgba(255,255,255,0.06)'}`,
-                  boxShadow: plan.highlight ? `0 0 60px ${plan.color}15` : 'none',
-                  transform: plan.highlight ? 'scale(1.02)' : 'none',
-                }}
-              >
+              <div key={i} style={{
+                position: 'relative',
+                background: DS.glass, backdropFilter: 'blur(20px)',
+                border: `1px solid ${plan.highlight ? plan.color + '35' : DS.border}`,
+                borderRadius: '20px', padding: '36px',
+                boxShadow: plan.highlight ? `0 0 60px ${plan.color}12` : 'none',
+                transform: plan.highlight ? 'scale(1.03)' : 'none',
+                transition: 'all 0.2s',
+              }}>
                 {plan.highlight && (
-                  <div
-                    className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-bold px-4 py-1 rounded-full"
-                    style={{ background: plan.color, color: '#0A0A0A' }}
-                  >
-                    MÁS POPULAR
-                  </div>
+                  <div style={{
+                    position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)',
+                    background: plan.color, color: DS.bg, fontSize: '11px', fontWeight: 700,
+                    padding: '4px 16px', borderRadius: '100px', letterSpacing: '0.5px', whiteSpace: 'nowrap',
+                  }}>MÁS POPULAR</div>
                 )}
-                <div className="mb-2">
-                  <span className="text-xs font-semibold px-2 py-1 rounded-full" style={{ background: plan.color + '15', color: plan.color }}>
-                    {plan.level}
-                  </span>
+                <span style={{
+                  fontSize: '11px', fontWeight: 700, padding: '4px 10px', borderRadius: '100px',
+                  background: plan.color + '15', color: plan.color, letterSpacing: '0.5px', textTransform: 'uppercase',
+                }}>{plan.level}</span>
+                <h3 style={{ fontSize: '26px', fontWeight: 900, marginTop: '16px', marginBottom: '8px', fontFamily: DS.font }}>{plan.name}</h3>
+                <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', marginBottom: '24px', lineHeight: 1.5 }}>{plan.desc}</p>
+                <div style={{ marginBottom: '28px' }}>
+                  <span style={{ fontSize: '52px', fontWeight: 900, fontFamily: DS.font, color: plan.highlight ? plan.color : DS.text }}>${plan.price}</span>
+                  <span style={{ color: 'rgba(255,255,255,0.35)', marginLeft: '6px', fontSize: '15px' }}>USD/{plan.period}</span>
                 </div>
-                <h3 className="text-2xl font-black mt-3 mb-1" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>{plan.name}</h3>
-                <p className="text-sm text-gray-400 mb-6">{plan.desc}</p>
-                <div className="mb-8">
-                  <span className="text-5xl font-black" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                    ${plan.price}
-                  </span>
-                  <span className="text-gray-400 ml-2">USD/{plan.period}</span>
-                </div>
-                <ul className="space-y-3 mb-8">
+                <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '28px' }}>
                   {plan.features.map((f, j) => (
-                    <li key={j} className="flex items-start gap-2 text-sm">
-                      <span style={{ color: plan.color }}>✓</span>
-                      <span className="text-gray-300">{f}</span>
+                    <li key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '14px' }}>
+                      <span style={{ color: plan.color, fontWeight: 700, marginTop: '1px' }}>✓</span>
+                      <span style={{ color: 'rgba(255,255,255,0.65)' }}>{f}</span>
                     </li>
                   ))}
                 </ul>
-                <a
-                  href="#contacto"
-                  className="block text-center py-3 rounded-xl font-bold transition-all hover:opacity-90"
-                  style={plan.highlight
-                    ? { background: `linear-gradient(135deg, ${plan.color}, #9B59B6)`, color: '#0A0A0A' }
-                    : { background: plan.color + '15', color: plan.color, border: `1px solid ${plan.color}30` }
-                  }
-                >
-                  {plan.cta}
-                </a>
+                <a href="#contacto" style={{
+                  display: 'block', textAlign: 'center', padding: '14px', borderRadius: '12px',
+                  fontWeight: 700, fontSize: '15px', textDecoration: 'none', transition: 'all 0.2s',
+                  ...(plan.highlight
+                    ? { background: `linear-gradient(135deg, ${plan.color}, #0050FF)`, color: DS.bg }
+                    : { background: plan.color + '12', color: plan.color, border: `1px solid ${plan.color}25` }),
+                }}>{plan.cta}</a>
               </div>
             ))}
           </div>
@@ -535,53 +522,51 @@ export default function JarvisLanding() {
       </section>
 
       {/* ── CTA FINAL ── */}
-      <section id="contacto" className="py-32 px-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <div
-            className="glass rounded-3xl p-16"
-            style={{ border: '1px solid rgba(0,245,255,0.15)', background: 'radial-gradient(ellipse at center, rgba(0,245,255,0.05) 0%, transparent 70%)' }}
-          >
-            <div className="text-6xl mb-6 animate-float">🤖</div>
-            <h2 className="text-4xl md:text-6xl font-black mb-6" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
+      <section id="contacto" style={{ padding: '120px 24px' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
+          <div style={{
+            background: DS.glass, backdropFilter: 'blur(20px)',
+            border: `1px solid rgba(0,207,255,0.18)`, borderRadius: '24px', padding: '80px 48px',
+            background: 'radial-gradient(ellipse at center, rgba(0,80,255,0.08) 0%, rgba(3,13,30,0.85) 70%)',
+            boxShadow: '0 0 80px rgba(0,80,255,0.08)',
+          }}>
+            <div style={{ fontSize: '56px', marginBottom: '24px', display: 'inline-block', animation: 'float 5s ease-in-out infinite' }}>🤖</div>
+            <h2 style={{ fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 900, marginBottom: '20px', fontFamily: DS.font, lineHeight: 1.1 }}>
               Activa JARVIS<br />
-              <span className="text-gradient-cyan">en tu empresa hoy</span>
+              <span style={{ background: DS.gradientText, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>en tu empresa hoy</span>
             </h2>
-            <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
-              Las primeras 10 agencias que se registren obtienen 3 meses al precio de Agencia
-              con acceso completo a todas las funciones Elite.
+            <p style={{ fontSize: '18px', color: 'rgba(255,255,255,0.5)', marginBottom: '40px', maxWidth: '520px', margin: '0 auto 40px', lineHeight: 1.7 }}>
+              Las primeras 10 agencias obtienen 3 meses al precio Agencia con acceso completo Elite.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="https://wa.me/?text=Quiero%20activar%20JARVIS"
-                className="px-10 py-4 rounded-2xl font-bold text-lg transition-all hover:scale-105"
-                style={{ background: 'linear-gradient(135deg, #00F5FF, #9B59B6)', color: '#0A0A0A' }}
-              >
-                Hablar con ventas →
-              </a>
-              <a
-                href="#precios"
-                className="px-10 py-4 rounded-2xl font-semibold text-lg glass border border-white/10 hover:border-white/20 transition-all"
-              >
-                Ver planes
-              </a>
+            <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <a href="https://wa.me/?text=Quiero%20activar%20JARVIS" className="cta-btn" style={{
+                padding: '16px 36px', borderRadius: '14px', fontWeight: 700, fontSize: '17px',
+                background: DS.gradientText, color: DS.bg, textDecoration: 'none', transition: 'all 0.2s',
+                boxShadow: '0 0 40px rgba(0,207,255,0.2)',
+              }}>Hablar con ventas →</a>
+              <a href="#precios" className="ghost-btn" style={{
+                padding: '16px 36px', borderRadius: '14px', fontWeight: 600, fontSize: '17px',
+                background: 'rgba(3,13,30,0.85)', backdropFilter: 'blur(20px)',
+                border: `1px solid ${DS.border}`, color: DS.text, textDecoration: 'none', transition: 'all 0.2s',
+              }}>Ver planes</a>
             </div>
-            <p className="text-sm text-gray-500 mt-6">Sin contrato · Cancela cuando quieras · Soporte 24/7</p>
+            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.25)', marginTop: '24px' }}>Sin contrato · Cancela cuando quieras · Soporte 24/7</p>
           </div>
         </div>
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="border-t py-12 px-6" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="font-black text-xl" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>JARVIS</span>
-            <span className="text-gray-600 text-sm">— Inteligencia Artificial Empresarial</span>
+      <footer style={{ borderTop: `1px solid ${DS.border}`, padding: '48px 24px' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontWeight: 900, fontSize: '20px', fontFamily: DS.font }}>JARVIS</span>
+            <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: '13px' }}>— Inteligencia Artificial Empresarial</span>
           </div>
-          <p className="text-gray-600 text-sm">© 2026 JARVIS. Todos los derechos reservados.</p>
-          <div className="flex gap-6 text-sm text-gray-600">
-            <a href="#" className="hover:text-white transition-colors">Privacidad</a>
-            <a href="#" className="hover:text-white transition-colors">Términos</a>
-            <a href="#" className="hover:text-white transition-colors">Contacto</a>
+          <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: '13px' }}>© 2026 JARVIS. Todos los derechos reservados.</p>
+          <div style={{ display: 'flex', gap: '24px' }}>
+            {['Privacidad', 'Términos', 'Contacto'].map(l => (
+              <a key={l} href="#" style={{ color: 'rgba(255,255,255,0.25)', fontSize: '13px', textDecoration: 'none' }}>{l}</a>
+            ))}
           </div>
         </div>
       </footer>
