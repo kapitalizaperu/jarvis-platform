@@ -133,6 +133,7 @@ export default function JarvisPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const isListeningRef = useRef(false)
   const visionIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const sessionIdRef = useRef(`session_${Date.now()}`)
 
   const now = () => new Date().toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })
 
@@ -240,6 +241,9 @@ export default function JarvisPage() {
           text,
           cameraBase64,
           screenBase64,
+          sessionId: sessionIdRef.current,
+          userId: 'jose-luis',
+          tenantId: 'demo-tenant',
           history: historyRef.current,
         })
       })
